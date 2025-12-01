@@ -1,0 +1,5 @@
+*~
+*.hi
+*.o
+# Do not commit real inputs
+day*input
