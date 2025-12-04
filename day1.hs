@@ -41,7 +41,9 @@ debug1 rs =
 rotate2 :: (Int, Int) -> Rotation -> (Int, Int)
 rotate2 (state, clicks) (Left n) =
   let newState = state - n
-  in (newState `mod` 100, clicks + abs (newState `div` 100))
+      d1 = if state == 0 then -1 else 0 
+      d2 = if newState `mod` 100 == 0 then 1 else 0 
+  in (newState `mod` 100, clicks + abs (newState `div` 100) + d1 + d2)
 rotate2 (state, clicks) (Right n) = 
     let newState = state + n
     in (newState `mod` 100, clicks + abs (newState `div` 100))
