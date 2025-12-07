@@ -49,11 +49,21 @@ isInvalidId x =
     else
       False
 
-invalidIds :: IdRange -> [Integer]
-invalidIds IdRange { from, to } = filter isInvalidId [from..to]
+invalidIds :: (Integer -> Bool) -> IdRange -> [Integer]
+invalidIds p (IdRange { from, to }) = filter p [from..to]
 
-part1 :: [IdRange] -> Integer
-part1 rs = sum $ concatMap invalidIds rs
+part :: (Integer -> Bool) -> [IdRange] -> Integer
+part p rs = sum $ concatMap (invalidIds p) rs
 
-runPart1 path = do rs <- readInput path; return (part1 rs)
+runPart1 path = do rs <- readInput path; return (part isInvalidId rs)
 
+-- Part 2
+isInvalidId2 :: Integer -> Bool
+isInvalidId2 id =
+  let s = show id
+      n = length s
+      ds = filter ((== 0) . (n `mod`)) [1..(n `div` 2)] -- Divisors
+      gids = map (\a -> take n $ cycle $ take a s) ds   -- Generated cycled ids
+  in elem s gids
+
+runPart2 path = do rs <- readInput path; return (part isInvalidId2 rs)
