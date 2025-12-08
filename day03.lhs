@@ -2,8 +2,8 @@ This is an implementation of Day 3 of Advent of Code
 
 
 > import System.IO
-> import Data.Maybe 
-> import Data.List  
+> import Data.Maybe
+> import Data.List
 
 We consider input as mere list of strings (lines)
 
@@ -12,13 +12,13 @@ We consider input as mere list of strings (lines)
 > readInput path =
 >   do inh <- openFile path ReadMode
 >      input <- hGetContents inh
->      return $ lines input 
+>      return $ lines input
 
 Naive solution to find largest possible joltage in bank:
 - For each battery (up to penultimate one) find largest joltage right from it in the bank.
 - Calculate the maximum joltage amongst ones derived on previous step.
 - For each subbank (all batteries from first, all batteries from second, etc): calculate maximum
-  joltage and then find aggregate maximum 
+  joltage and then find aggregate maximum
 
 > maxJoltage :: String -> Int
 > maxJoltage cs = let remBanks = take (length cs - 1) $ iterate tail cs in
@@ -28,12 +28,12 @@ Naive solution to find largest possible joltage in bank:
 The solution and its runner
 
 > part :: (String -> Integer) -> Input -> Integer
-> part jfunc lines = sum $ map jfunc lines 
+> part jfunc lines = sum $ map jfunc lines
 
 > runPart :: (String -> Integer) -> FilePath -> IO Integer
 > runPart jfunc path = do
 >   input <- readInput path
->   return $ part jfunc input 
+>   return $ part jfunc input
 
 
 For second part we need to use 12 batteries in bank.
@@ -57,7 +57,7 @@ From:  8  1  8  1
 Max:   8
 From:     1  8  1  8
 Max:         8
-From:           1  8  1  
+From:           1  8  1
 Max:               8
 From:                 1  9
 Max:                     9
