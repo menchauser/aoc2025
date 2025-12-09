@@ -2,15 +2,17 @@ import System.IO
 import Data.Array
 
 
-type Input = Array (Int, Int) Char
+type Input = Array (Int, Int) Int 
 
+-- Input is parsed into array of 0 and 1. 0 - floor tile, 1 - paper.
 parseInput :: String -> Input
 parseInput ls =
   let rows = lines ls 
       rowcount = length rows
       colcount = length $ head rows
       bounds = ((1, 1), (rowcount, colcount))
-  in listArray bounds (concat rows)
+      arr_data = map (\c -> if c == '@' then 1 else 0) (concat rows)
+  in listArray bounds arr_data
 
 
 readInput :: FilePath -> IO Input
@@ -23,23 +25,45 @@ readInput path =
 -- Array bounds: ((1, 1), (N, N))
 -- need to build range of indices for each point
 
--- Indices to check
+-- Indices to check for each grid position
 surroundIdx (i, j) rows cols = filter goodIdx $ range ((i - 1, j - 1), (i + 1, j + 1))
   where goodIdx (r, c) = r > 0 && r <= rows && c > 0 && c <= cols && (r, c) /= (i, j)
 
--- Now each array element should be mapped to the amount of surrounding papers
-countPapersAll :: Input -> Array (Int, Int) Int
-countPapersAll input = array (bounds input) [ (i, countPapers input i) | i <- indices input]
-  where countPapers input idx
-          -- we count only for papery grid tiles, we ignore others
-          | input ! idx == '@' =
-            let (_, (rows, cols)) = bounds input 
-                surroundChars = map (input !) (surroundIdx idx rows cols)
-            in length $ filter (== '@') surroundChars
-          | otherwise = 9
+-- Count amount of papers in array
+totalPaper :: Input -> Integer 
+totalPaper = sum . map toInteger . elems
 
--- Finally we can count the number of elements which has < 4 rolls of paper
-part1 input = length $ filter (< 4) $ elems $ countPapersAll input
+-- Do one step of paper removal
+removePaper :: Input -> Input
+removePaper input = array (bounds input) [ (i, removePaper' input i) | i <- indices input ]
+  where removePaper' input i
+          -- For paper tile - calculate new value
+          | input ! i == 1 =
+              let (_, (rows, cols)) = bounds input
+                  surroundPapers = sum $ map (input !) (surroundIdx i rows cols)
+              in if surroundPapers < 4 then 0 else 1
+          -- Skip non-paper tiles
+          | otherwise = 0
+
+-- Part 1: Count the number of papers removed in one step 
+part1 input = let currentPaper = totalPaper input 
+                  nextPaper = totalPaper $ removePaper input
+              in currentPaper - nextPaper
 
 runPart1 path = do input <- readInput path
                    return $ part1 input
+
+-- Part 2 Count total possible amount of paper removed
+part2 :: Input -> Integer
+part2 input =
+  -- All future floor states: with paper removed on each step
+  let floorStates = iterate removePaper input 
+      -- Counts of paper on each step
+      paperCounts = map totalPaper floorStates
+      -- How many papers were removed on each step
+      paperCountDiffs = zipWith (-) paperCounts (tail paperCounts)
+      -- Summarize total amount of paper removed 
+  in sum $ takeWhile (> 0) paperCountDiffs 
+
+runPart2 path = do input <- readInput path
+                   return $ part2 input
