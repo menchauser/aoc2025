@@ -1,54 +1,61 @@
 import System.IO
-import Data.Array
+import Data.Array.IArray
+import Data.Array.MArray
 
 
 -- To count amount of splits we need to count amount of splitters that were hit.
 -- What could be suitable data structure?
--- An array? and on each step scan one more line of array and add splitters.
-
+-- An array? any (Int, Int) Char
 type Input = Array (Int, Int) Char
 
-parseInput s = 
-  let rows = lines s 
+-- Reads input with automatically inserted 0 column of '.'
+parseInput s =
+  let rows = map ('.':) $ lines s  -- Prepend each row with '.'
       rowcount = length rows
       colcount = length $ head rows
-      bounds = ((1, 1), (rowcount, colcount))
+      bounds = ((1, 0), (rowcount, colcount))
   in listArray bounds (concat $ lines s)
 
+
 readInput :: FilePath -> IO Input
-readInput path = 
+readInput path =
   do inh <- openFile path ReadMode
-     input <- hGetContents inh 
-     return $ parseInput input 
+     input <- hGetContents inh
+     return $ parseInput input
+
 
 -- TODO
-myShow input = let es = elems input 
+myShow input = let es = elems input
                    (rows, cols) = bounds input
-               in (show rows) ++ ":" ++ (show cols)
+               in show rows ++ ":" ++ show cols
 
--- Beam step
--- Input: (manifold, number of splits), row
--- Output: (manifold, new number of splits)
+
 {-
-On each step we need two lists:
-- current row
-- previous row
+-- Let's first calculate next step.
+-- 
+-- Input: (manifold, number of splits), row, col
+-- Output: (character, new number of splits)
 
-Scan crow by two chars from left to right. On each step:
-- on ".^" - check if prow had "*|" on that place => produce "|^"
-- on "^." - check if prow had "|*" on that place => produce "^|"
-- on ".." - check "|*" or "*|" and produce "|." or "." accordingly
-
-Or maybe we can go array wise
-on each step we have
-((r, c), '.') =>
-- check ((r - 1, c), '|')
-- check ((r - 1, c + 1), '|') && ((r, c + 1), '^')
-         || ((r - 1, c - 1), '|') && ((r, c - 1), '^')
-((r, c), '^') => check ((r - 1, c), '|')
-but how to update left-right coordinates then?
-what is the general formula of a row value
--}
+-- now we go from left to right 
+-- by scanning square of previous elements. 
+--}
 beamStep :: (Input, Int) -> Int -> (Input, Int)
-beamStep (ms, splits) row =
+beamStep (ms, splits) row = undefined
+
+{--
+Calculates a character for given matrix position based on surroundings.
+We are reviewing characters on positions 1-5 to calculate the dot position:
+123
+4.5
+
+Possible outcomes:
+_._  _|_  _^_  __|  |__  _S_
+_._  _|_  _._  _|^  ^|_  _|_
+--}
+-- 
+-- Idea
+nextChar :: Input -> (Int, Int) -> Char
+nextChar arr (r, c) = undefined
+  -- first select surrounding chars
+  -- then 
 
